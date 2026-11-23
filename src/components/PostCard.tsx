@@ -1,0 +1,18 @@
+import { useTranslation } from 'react-i18next'
+import type { Post } from '../store'
+
+const tone = (id: string) => [...id].reduce((a, c) => a + c.charCodeAt(0), 0) % 3
+const size = (len: number) => (len < 60 ? 'lg' : len < 140 ? 'md' : 'sm')
+
+export function PostCard({ post, onLike }: { post: Post; onLike: (id: string) => void }) {
+  const { t } = useTranslation()
+  return (
+    <article className={`card tone-${tone(post.id)}`}>
+      <blockquote className={size(post.text.length)}>{post.text}</blockquote>
+      <footer>
+        <span>{t('post.by')} {post.author}</span>
+        <button type="button" onClick={() => onLike(post.id)} aria-label={t('post.like')}>♥ {post.likes}</button>
+      </footer>
+    </article>
+  )
+}

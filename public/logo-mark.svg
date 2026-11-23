@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -50 100 100">
+  <defs>
+    <path id="p" d="M0,-7 C-3,-12 -10,-19 -10,-27 A10,10 0 0 1 10,-27 C10,-19 3,-12 0,-7Z"/>
+  </defs>
+  <g fill="#f38634">
+    <use href="#p"/><use href="#p" transform="rotate(45)"/><use href="#p" transform="rotate(90)"/><use href="#p" transform="rotate(135)"/>
+    <use href="#p" transform="rotate(180)"/><use href="#p" transform="rotate(225)"/><use href="#p" transform="rotate(270)"/><use href="#p" transform="rotate(315)"/>
+  </g>
+  <circle r="6" fill="#100c09"/>
+</svg>
