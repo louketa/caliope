@@ -19,12 +19,12 @@ Um container só (`app`) serve tudo no mesmo domínio: o React em `/`, a API em 
 
 ## Subir na VPS
 
-Pré-requisitos: Docker + plugin compose, portas 80 e 443 abertas, e o domínio com registro DNS **A** apontando para o IP da VPS.
+Pré-requisitos: Docker + plugin compose, portas 80 e 443 abertas, e o domínio `caliopevox.com` com registro DNS **A** apontando para o IP da VPS.
 
 ```bash
 git clone <repo> /opt/caliope && cd /opt/caliope
 cp .env.example .env
-# preencha DOMAIN, e gere as chaves:
+# DOMAIN já vem como caliopevox.com; gere as chaves:
 echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
 echo "DB_PASSWORD=$(openssl rand -hex 24)" >> .env
 # (apague as linhas APP_KEY= e DB_PASSWORD= vazias que vieram do exemplo)
