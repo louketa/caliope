@@ -7,8 +7,13 @@ const size = (len: number) => (len < 60 ? 'lg' : len < 140 ? 'md' : 'sm')
 export function PostCard({ post, onLike }: { post: Post; onLike: (id: string) => void }) {
   const { t } = useTranslation()
   return (
-    <article className={`card tone-${tone(post.id)}`}>
+    <article className={`card tone-${tone(post.id)}${post.featured ? ' featured' : ''}`}>
+      {post.featured && <span className="badge">★ {t('post.featured')}</span>}
+      {post.title && <h3 className="work-title">{post.title}</h3>}
       <blockquote className={size(post.text.length)}>{post.text}</blockquote>
+      {post.url && (
+        <a className="read-more" href={post.url} target="_blank" rel="noopener noreferrer">{t('post.readFull')} →</a>
+      )}
       <footer>
         <span>{t('post.by')} {post.author}</span>
         <button type="button" onClick={() => onLike(post.id)} aria-label={t('post.like')}>♥ {post.likes}</button>

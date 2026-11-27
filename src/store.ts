@@ -1,9 +1,9 @@
-// Camada de dados local (localStorage). Trocar por API real depois mantendo estas assinaturas.
+// Posts vêm da API (server/index.mjs). Login segue local, de demonstração.
 import type { Lang } from './i18n'
 
-export type Kind = 'aforismo' | 'poesia' | 'cordel' | 'conto' | 'novela'
-export const KINDS: Kind[] = ['aforismo', 'poesia', 'cordel', 'conto', 'novela']
-export const ENABLED_KINDS: Kind[] = ['aforismo']
+export type Kind = 'aforismo' | 'poesia' | 'cordel' | 'conto' | 'romance' | 'letra'
+export const KINDS: Kind[] = ['aforismo', 'poesia', 'cordel', 'conto', 'romance', 'letra']
+export const ENABLED_KINDS: Kind[] = ['aforismo', 'romance']
 
 export interface Post {
   id: string
@@ -13,22 +13,21 @@ export interface Post {
   text: string
   likes: number
   createdAt: number
+  featured: boolean
+  // só romance: título e link externo (ex.: Drive); `text` é a prévia gratuita
+  title?: string
+  url?: string
 }
+export type NewPost = Pick<Post, 'kind' | 'lang' | 'author' | 'text'> & Partial<Pick<Post, 'featured' | 'title' | 'url'>>
 export interface Session { name: string; email: string }
 
-const POSTS = 'caliope.posts'
 const SESSION = 'caliope.session'
 
-const seed: Post[] = [
-  { id: 's1', kind: 'aforismo', lang: 'pt', author: 'Caliope', text: 'Quem escreve curto é obrigado a pensar longo.', likes: 12, createdAt: 1 },
-  { id: 's2', kind: 'aforismo', lang: 'pt', author: 'Caliope', text: 'O silêncio também tem rascunhos.', likes: 8, createdAt: 2 },
-  { id: 's3', kind: 'aforismo', lang: 'es', author: 'Caliope', text: 'Una frase breve es una puerta que se deja entreabierta.', likes: 15, createdAt: 3 },
-  { id: 's4', kind: 'aforismo', lang: 'pt', author: 'Caliope', text: 'Não se escreve para ser lido: escreve-se para não se perder no caminho de volta a si mesmo, mesmo quando ninguém espera por nós do outro lado da página.', likes: 21, createdAt: 4 },
-  { id: 's5', kind: 'aforismo', lang: 'es', author: 'Caliope', text: 'La memoria es un cuaderno que reescribe a quien lo lee.', likes: 9, createdAt: 5 },
-  { id: 's6', kind: 'aforismo', lang: 'pt', author: 'Caliope', text: 'Toda pressa é uma forma de ausência.', likes: 17, createdAt: 6 },
-  { id: 's7', kind: 'aforismo', lang: 'es', author: 'Caliope', text: 'Escribir es aprender a quedarse.', likes: 6, createdAt: 7 },
-  { id: 's8', kind: 'aforismo', lang: 'pt', author: 'Caliope', text: 'A palavra certa chega depois de todas as erradas.', likes: 11, createdAt: 8 },
-]
+async function api<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`/api${path}`, { headers: { 'Content-Type': 'application/json' }, ...init })
+  if (!res.ok) throw new Error(((await res.json().catch(() => null)) as { error?: string } | null)?.error ?? res.statusText)
+  return res.json() as Promise<T>
+}
 
 function read<T>(key: string, fallback: T): T {
   try {
@@ -40,15 +39,10 @@ function write(key: string, value: unknown) {
   try { localStorage.setItem(key, JSON.stringify(value)) } catch { /* sem storage */ }
 }
 
-export const getPosts = (): Post[] => read<Post[]>(POSTS, seed).sort((a, b) => b.createdAt - a.createdAt)
-export function addPost(p: Pick<Post, 'kind' | 'lang' | 'author' | 'text'>): Post {
-  const post: Post = { ...p, id: crypto.randomUUID(), likes: 0, createdAt: Date.now() }
-  write(POSTS, [post, ...getPosts()])
-  return post
-}
-export function likePost(id: string) {
-  write(POSTS, getPosts().map((p) => (p.id === id ? { ...p, likes: p.likes + 1 } : p)))
-}
+export const getPosts = async (): Promise<Post[]> =>
+  (await api<Post[]>('/posts')).sort((a, b) => b.createdAt - a.createdAt)
+export const addPost = (p: NewPost): Promise<Post> => api('/posts', { method: 'POST', body: JSON.stringify(p) })
+export const likePost = (id: string): Promise<Post> => api(`/posts/${id}/like`, { method: 'POST' })
 
 // Login de demonstração: sem servidor, a senha não é guardada nem verificada.
 export const getSession = (): Session | null => read<Session | null>(SESSION, null)
